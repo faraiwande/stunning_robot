@@ -3,7 +3,7 @@ import logging
 from flask import Flask
 from flask_migrate import Migrate
 from bot_service.flask_config import Config
-from bot_service.models.user_profile_model import db
+from bot_service.models.bot_service_models import db
 
 migrate = Migrate()
 

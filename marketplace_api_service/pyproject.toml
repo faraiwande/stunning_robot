@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "bot_service"
+name = "marketplace_api_service"
 version = "0.0.1"
-description = "Auth Service: Booking System – Simplify Your Grooming Experience"
+description = "Marketplace API Service"
 authors = ['Farai Munashe Wande']
 
 [tool.poetry.dependencies]

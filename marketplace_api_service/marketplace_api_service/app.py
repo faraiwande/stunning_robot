@@ -2,8 +2,8 @@ import os
 import logging
 from flask import Flask
 from flask_migrate import Migrate
-from bot_service.flask_config import Config
-from bot_service.models.bot_service_models import db
+from marketplace_api_service.flask_config import Config
+from marketplace_api_service.models.marketplace_api_service import db
 
 migrate = Migrate()
 
@@ -17,10 +17,8 @@ def create_app():
     
     @app.route('/')
     def index():
-        return {"message":"Welcome to the Bot Service API!"}, 200
+        return {"message":"Welcome to the Marketplace Service API!"}, 200
     
-    
-     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
     if app.config.get("ENV") != "production":

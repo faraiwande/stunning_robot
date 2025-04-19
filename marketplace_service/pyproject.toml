@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "marketplace_api_service"
+name = "marketplace_service"
 version = "0.0.1"
-description = "Marketplace API Service"
+description = "Marketplace Service"
 authors = ['Farai Munashe Wande']
 
 [tool.poetry.dependencies]

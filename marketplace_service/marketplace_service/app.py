@@ -2,8 +2,8 @@ import os
 import logging
 from flask import Flask
 from flask_migrate import Migrate
-from marketplace_api_service.flask_config import Config
-from marketplace_api_service.models.marketplace_api_service import db
+from marketplace_service.flask_config import Config
+from marketplace_service.models.mp_models import db
 
 migrate = Migrate()
 

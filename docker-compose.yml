@@ -1,28 +1,91 @@
-# docker-compose.yml
-version: '3.7'
+networks:
+  llm_network:
+    driver: bridge
+
+volumes:
+  ollama_models:
+  es_data:
 
 services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+  llm_service:
+    build:
+      context: ./llm_service
+      dockerfile: ./dockerfiles/Dockerfile.llm_service
+    container_name: llm_service
+    ports:
+      - "8001:8001"
     environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
+      - FLASK_ENV=production
+      - FLASK_APP=llm_service/app
+      - FLASK_DEBUG=true
+      - SECRET_KEY=secret-key
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.12.0
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.12.0
-    ports:
-      - "5000:5000"
-      - "9600:9600"
     volumes:
-      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    depends_on:
-      - elasticsearch
+      - ./llm_service:/app/llm_service
+    networks:
+      - llm_network
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - llm_network
+    restart: unless-stopped
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_NO_CUDA=0  # Explicitly enable GPU
+      - OLLAMA_CONTEXT_LENGTH=2048  # Reduce for 2GB VRAM
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:11434"]
+      interval: 30s
+      timeout: 10s
+      retries: 15
+
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - ES_JAVA_OPTS=-Xms1g -Xmx1g
+  #   ports:
+  #     - "9200:9200"
+  #   volumes:
+  #     - es_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - llm_network
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.12.0
+  #   ports:
+  #     - "5601:5601"
+  #   networks:
+  #     - llm_network
+  #   depends_on:
+  #     - elasticsearch
+
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:8.12.0
+  #   ports:
+  #     - "5000:5000"
+  #     - "9600:9600"
+  #   volumes:
+  #     - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #   networks:
+  #     - llm_network
+  #   depends_on:
+  #     - elasticsearch

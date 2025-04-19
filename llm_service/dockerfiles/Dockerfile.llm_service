@@ -1,0 +1,39 @@
+FROM python:3.13 AS base
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python3 - \ 
+    && apt-get update \
+    && apt-get upgrade -y \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add Poetry to PATH
+ENV PATH=$PATH:/root/.local/bin/
+
+# Set working directory and copy dependency files
+WORKDIR /llm_service
+COPY pyproject.toml poetry.lock ./
+# Copy the app code
+COPY llm_service /llm_service/llm_service
+
+# Install dependencies
+RUN poetry install  --no-ansi --no-interaction
+
+
+FROM python:3.13-slim AS prod
+
+
+
+COPY --from=base /root /root
+ENV PATH=$PATH:/root/.local/bin/
+
+
+WORKDIR /llm_service
+COPY --from=base /llm_service /llm_service
+VOLUME /llm_service
+
+
+CMD ["poetry", "run", "gunicorn", "-b", "0.0.0.0:8001", "--worker-class", "gevent", "--workers", "5", "--worker-connections", "1000","--reload", "llm_service.app:create_app()"]
+
+EXPOSE 8001

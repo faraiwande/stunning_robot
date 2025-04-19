@@ -127,3 +127,15 @@ class BuyRequest(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_deleted = db.Column(db.Boolean, default=False)
     deleted_at = db.Column(db.DateTime)
+
+    
+class SellerReview(db.Model):
+    __tablename__ = 'seller_reviews'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid4()))
+    seller_phone = db.Column(db.String(20), db.ForeignKey('sellers.phone'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    seller = db.relationship('Seller', backref=db.backref('reviews', lazy=True))

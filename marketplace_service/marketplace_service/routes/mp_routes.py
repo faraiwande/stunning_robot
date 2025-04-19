@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 from flask import Blueprint, request, jsonify
-from marketplace_service.models.mp_models import Seller, Listing, Payment, db
+from marketplace_service.models.mp_models import db, SellerReview, Seller, Listing, Payment
 
 routes_bp = Blueprint("routes", __name__)
 

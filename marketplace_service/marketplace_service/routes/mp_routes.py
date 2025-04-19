@@ -102,3 +102,46 @@ def confirm_payment():
     db.session.commit()
 
     return jsonify({"message": "Payment confirmed and seller upgraded"}), 200
+
+
+@routes_bp.route("/sellers/<phone>/reviews", methods=["POST"])
+def add_seller_review(phone):
+    data = request.get_json()
+    rating = data.get("rating")
+    comment = data.get("comment")
+
+    if rating is None or not (1 <= rating <= 5):
+        return jsonify({"error": "Rating must be an integer between 1 and 5"}), 400
+
+    seller = Seller.query.get(phone)
+    if not seller:
+        return jsonify({"error": "Seller not found"}), 404
+
+    review = SellerReview(
+        id=str(uuid4()),
+        seller_phone=phone,
+        rating=rating,
+        comment=comment,
+        created_at=datetime.utcnow()
+    )
+
+    db.session.add(review)
+    db.session.commit()
+
+    return jsonify({"message": "Review submitted successfully"}), 201
+
+
+@routes_bp.route("/sellers/<phone>/reviews", methods=["GET"])
+def get_seller_reviews(phone):
+    seller = Seller.query.get(phone)
+    if not seller:
+        return jsonify({"error": "Seller not found"}), 404
+
+    reviews = SellerReview.query.filter_by(seller_phone=phone).all()
+    result = [{
+        "rating": r.rating,
+        "comment": r.comment,
+        "created_at": r.created_at.isoformat()
+    } for r in reviews]
+
+    return jsonify({"reviews": result}), 200

@@ -22,6 +22,8 @@ def create_app():
         app = Flask(__name__)
         app.config.from_object(Config)
 
+       
+        @app.route("/health", methods=["GET"])
         def health():
             logger.info("health check endpoint accessed")
             return jsonify({
@@ -29,8 +31,9 @@ def create_app():
                 "message": "LLM Service API Running !",
                 "timestamp": datetime.now(timezone.utc).isoformat()
             }), 200
-
-
+            
+            
+            
 
         logger.info("LLM Service initialized successfully")
         return app
